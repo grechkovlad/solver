@@ -9,4 +9,4 @@ if solution is None:
     print("UNSAT")
 else:
     print("SAT")
-    print("\n".join(["%s = %d" % (name, solution[index]) for name, index in names.items()]))
+    print("\n".join(["%s = %f" % (name, solution[index]) for name, index in names.items()]))
