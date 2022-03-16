@@ -250,6 +250,14 @@ class SimpleTestSix(TestBases.TestSolvingBase):
                 ([1, 1], "<=", 1)]
 
 
+class SimpleTextSeven(TestBases.TestSolvingBase):
+    def _is_sat(self):
+        return True
+
+    def _get_constraints(self):
+        return [([2], "=", 1)]
+
+
 class SimplestContradictionTest(TestBases.TestSolvingBase):
     def _is_sat(self):
         return False
