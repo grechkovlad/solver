@@ -1,4 +1,5 @@
 import unittest
+from fractions import Fraction as Q
 
 from arithmetics.LRATheory import solve, _create_aux_problem_canonical_repr, _pivot
 
@@ -47,8 +48,11 @@ class TestBases:
             obj_func_exp, A_exp, c_exp, base_vars_exp = self._get_expected()
             obj_func_act, A_act, c_act, base_vars_act, _ = _create_aux_problem_canonical_repr(constraints)
             self.assertEqual(obj_func_exp, obj_func_act)
+            self.assertTrue(all([isinstance(val, Q) for val in obj_func_act]))
             self.assertEqual(A_exp, A_act)
+            self.assertTrue(all([isinstance(val, Q) for row in A_act for val in row]))
             self.assertEqual(c_exp, c_act)
+            self.assertTrue(all([isinstance(val, Q) for val in c_act]))
             self.assertEqual(base_vars_exp, base_vars_act)
 
     class PivotTestBase(unittest.TestCase):

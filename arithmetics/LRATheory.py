@@ -1,4 +1,5 @@
 import copy
+from fractions import Fraction as Q
 
 
 def solve(constraints):
@@ -88,9 +89,10 @@ def _pivot(obj_func_coeffs, obj_fun_bias, a, c, base_vars, out_constraint_index,
 def _add_constraint(lhs, sign, rhs, total_var_count, A, c):
     match sign:
         case "<=":
-            row = [-1 * coeff for coeff in lhs] + lhs + [0] * (total_var_count - 2 * len(lhs) - 1) + [1]
+            row = [Q(-1 * coeff) for coeff in lhs] + [Q(val) for val in lhs] + [Q(0)] * (
+                    total_var_count - 2 * len(lhs) - 1) + [Q(1)]
             A.append(row)
-            c.append(rhs)
+            c.append(Q(rhs))
         case ">=":
             _add_constraint([-1 * coeff for coeff in lhs], "<=", -rhs, total_var_count, A, c)
         case "=":
@@ -108,5 +110,5 @@ def _create_aux_problem_canonical_repr(constraints):
     for lhs, sign, rhs in constraints:
         _add_constraint(lhs, sign, rhs, total_var_count, A, c)
     base_vars = list(range(2 * original_var_count, total_var_count - 1))
-    obj_func = [0] * (total_var_count - 1) + [-1]
+    obj_func = [Q(0)] * (total_var_count - 1) + [Q(-1)]
     return obj_func, A, c, base_vars, original_to_new
