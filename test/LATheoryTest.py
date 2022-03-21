@@ -1,7 +1,8 @@
 import unittest
 from fractions import Fraction as Q
 
-from arithmetics.LRATheory import solve, _create_aux_problem_canonical_repr, _pivot
+from arithmetics.LIATheory import solve as solve_integers
+from arithmetics.LRATheory import solve as solve_rational, _create_aux_problem_canonical_repr, _pivot
 
 
 def _check_constraint(constraint, valuation):
@@ -21,6 +22,9 @@ def _check_constraint(constraint, valuation):
 
 class TestBases:
     class TestSolvingBase(unittest.TestCase):
+        def _solving_procedure(self):
+            raise NotImplementedError()
+
         def _get_constraints(self):
             raise NotImplementedError("Must define input constraints")
 
@@ -29,12 +33,20 @@ class TestBases:
 
         def test_solving(self):
             constraints = self._get_constraints()
-            valuation = solve(constraints)
+            valuation = self._solving_procedure()(constraints)
             if self._is_sat():
                 self.assertFalse(valuation is None)
                 self.assertTrue(all([_check_constraint(constraint, valuation) for constraint in constraints]))
             else:
                 self.assertTrue(valuation is None)
+
+    class TestRationalsSolvingBase(TestSolvingBase):
+        def _solving_procedure(self):
+            return solve_rational
+
+    class TestIntegerSolvingBase(TestSolvingBase):
+        def _solving_procedure(self):
+            return solve_integers
 
     class CanonicalFormConstructionTestBase(unittest.TestCase):
         def _get_constraints(self):
@@ -170,7 +182,7 @@ class SimplePivotTestTwo(TestBases.PivotTestBase):
         return obj_fun_coeffs, obj_fun_bias, a, c, base_vars
 
 
-class EmptyTest(TestBases.TestSolvingBase):
+class EmptyTestRationals(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -178,7 +190,7 @@ class EmptyTest(TestBases.TestSolvingBase):
         return []
 
 
-class SingleConstraintTest(TestBases.TestSolvingBase):
+class SingleConstraintTestRationals(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -186,7 +198,7 @@ class SingleConstraintTest(TestBases.TestSolvingBase):
         return [([1], "<=", 0)]  # x <= 0
 
 
-class TwoConstraintsTest(TestBases.TestSolvingBase):
+class TwoConstraintsTestRationals(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -194,7 +206,7 @@ class TwoConstraintsTest(TestBases.TestSolvingBase):
         return [([1, 1], "<=", 5), ([-1, 2], ">=", 0)]  # x0 + x1 <= 5 && -x0 + 2x1 >= 0
 
 
-class SimpleTestOne(TestBases.TestSolvingBase):
+class SimpleTestRationalsOne(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -204,7 +216,7 @@ class SimpleTestOne(TestBases.TestSolvingBase):
                 ([1, 0], "=", 2)]
 
 
-class SimpleTestTwo(TestBases.TestSolvingBase):
+class SimpleTestRationalsTwo(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -214,7 +226,7 @@ class SimpleTestTwo(TestBases.TestSolvingBase):
                 ([1, -1], ">=", 0)]
 
 
-class SimpleTestThree(TestBases.TestSolvingBase):
+class SimpleTestRationalsThree(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -224,7 +236,7 @@ class SimpleTestThree(TestBases.TestSolvingBase):
                 ([1, -1], "=", -1)]
 
 
-class SimpleTestFour(TestBases.TestSolvingBase):
+class SimpleTestRationalsFour(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -234,7 +246,7 @@ class SimpleTestFour(TestBases.TestSolvingBase):
                 ([0, 1, 0], ">=", -5)]
 
 
-class SimpleTestFive(TestBases.TestSolvingBase):
+class SimpleTestRationalsFive(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -244,7 +256,7 @@ class SimpleTestFive(TestBases.TestSolvingBase):
                 ([0, 1, 0], "=", -2), ]
 
 
-class SimpleTestSix(TestBases.TestSolvingBase):
+class SimpleTestRationalsSix(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return False
 
@@ -254,7 +266,7 @@ class SimpleTestSix(TestBases.TestSolvingBase):
                 ([1, 1], "<=", 1)]
 
 
-class SimpleTextSeven(TestBases.TestSolvingBase):
+class SimpleTextSeven(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return True
 
@@ -262,9 +274,26 @@ class SimpleTextSeven(TestBases.TestSolvingBase):
         return [([2], "=", 1)]
 
 
-class SimplestContradictionTest(TestBases.TestSolvingBase):
+class SimplestContradictionTestRationals(TestBases.TestRationalsSolvingBase):
     def _is_sat(self):
         return False
 
     def _get_constraints(self):
         return [([1], "<=", 0), ([1], ">=", 1)]  # x <= 0 && x >= 1
+
+
+class SimpleTestIntegersOne(TestBases.TestIntegerSolvingBase):
+    def _is_sat(self):
+        return True
+
+    def _get_constraints(self):
+        return [([1, 1], "<=", -4),
+                ([0, 1], ">=", -2)]
+
+
+class SimpleTestIntegerTwo(TestBases.TestIntegerSolvingBase):
+    def _is_sat(self):
+        return False
+
+    def _get_constraints(self):
+        return [([2], "=", 3)]  # 2x = 3
